@@ -1,6 +1,9 @@
 package com.example.medicalclinicproxy.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -21,15 +24,18 @@ public class Appointment {
     private Long doctorId;
 
     @Override
-    public boolean equals(Object o){
-        if(this == o) {return true;}
-        if(!(o instanceof Appointment other)){
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Appointment other)) {
             return false;
         }
         return id != null && id.equals(other.getId());
     }
+
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return getClass().hashCode();
     }
 }
