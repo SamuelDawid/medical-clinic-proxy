@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-appointment-table
+      author: Samuel Dawid
+      changes:
+        - createTable:
+            tableName: APPOINTMENT
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_appointments
+              - column:
+                  name: start_date_time
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_date_time
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: patient_id
+                  type: bigint
+                  remarks: "id pacjenta z medical-clinic, null = termin wolny"
+              - column:
+                  name: doctor_id
+                  type: bigint
+                  remarks: "id lekarza z medical-clinic, brak FK"
+                  constraints:
+                    nullable: false
