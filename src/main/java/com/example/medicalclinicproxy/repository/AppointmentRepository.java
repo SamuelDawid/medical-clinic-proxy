@@ -17,11 +17,10 @@ import java.util.Set;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     Page<Appointment> findAllByPatientId(Long id, Pageable pageable);
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints(value = {@QueryHint(name = "jakarta.persistence.lock.timeout", value = "5000")})
     Optional<Appointment> findWithLockById(Long id);
-
+    Page<Appointment> findAllByDoctorId(Long id,Pageable pageable);
     Set<Appointment> findByDoctorIdAndStartDateTimeLessThanAndEndDateTimeGreaterThan(Long doctorId,
             LocalDateTime newEnd,
             LocalDateTime newStart
