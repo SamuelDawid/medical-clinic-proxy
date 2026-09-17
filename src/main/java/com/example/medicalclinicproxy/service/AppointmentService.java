@@ -2,10 +2,7 @@ package com.example.medicalclinicproxy.service;
 
 import com.example.medicalclinicproxy.client.MedicalClinicClient;
 import com.example.medicalclinicproxy.dto.*;
-import com.example.medicalclinicproxy.exceptions.AppointmentDoesNotExistsException;
-import com.example.medicalclinicproxy.exceptions.InvalidDateOfAppointmentException;
-import com.example.medicalclinicproxy.exceptions.InvalidTimeOfTheAppointmentException;
-import com.example.medicalclinicproxy.exceptions.TimeIsOverlappingWithAnotherAppointmentException;
+import com.example.medicalclinicproxy.exceptions.*;
 import com.example.medicalclinicproxy.mapper.AppointmentMapper;
 import com.example.medicalclinicproxy.model.Appointment;
 import com.example.medicalclinicproxy.repository.AppointmentRepository;
@@ -27,7 +24,10 @@ public class AppointmentService {
     MedicalClinicClient clinicClient;
     AppointmentMapper mapper;
     AppointmentRepository repository;
-
+    @Transactional(readOnly = true)
+    public PageDto<AppointmentDto> findAll(Pageable pageable){
+        return PageDto.from(repository.findAll(pageable).map(mapper::toDto));
+    }
     @Transactional(readOnly = true)
     public PageDto<AppointmentDto> findAllByPatientId(@NonNull Long id, Pageable pageable) {
         return PageDto.from(repository.findAllByPatientId(id, pageable).map(mapper::toDto));
@@ -48,6 +48,7 @@ public class AppointmentService {
         log.info("Creating appointment with doctor Id {} with date {} to {}",
                 command.doctorId(), command.startDateTime(), command.endDateTime());
         Appointment appointment = mapper.toEntity(command);
+        //Added this line in order to validate if doctor exists in database medical-clinic
         DoctorDto doctorById = clinicClient.getDoctorById(command.doctorId());
         appointment.setDoctorId(doctorById.id());
 
@@ -56,6 +57,37 @@ public class AppointmentService {
         Appointment saved = repository.save(appointment);
         log.info("Appointment with Id {} Created", appointment.getId());
         return mapper.toDto(saved);
+    }
+
+    @Transactional
+    public void removePatientFromVisit(@NonNull Long appointmentId) {
+        log.info("Removing Patient from Visit with Id {}", appointmentId);
+        Appointment appointment = findOrThrow(appointmentId);
+        appointment.setPatientId(null);
+        log.info("Patient removed successfully from visit with Id {} ", appointmentId);
+    }
+
+    @Transactional
+    public AppointmentDto assignPatientToAppointment(@NonNull AssignPatientToAppointmentCommand command) {
+        log.info("Assigning Patient with Id {} To Appointment with Id {}", command.patientId(), command.appointmentId());
+        Appointment appointment = repository.findWithLockById(command.appointmentId())
+                .orElseThrow(AppointmentDoesNotExistsException::new);
+        if (appointment.getPatientId() != null) {
+            log.warn("Couldn't assign patient because appointment already exists");
+            throw new AppointmentAlreadyTakenException();
+        }
+        PatientDto patientDto = clinicClient.getPatientById(command.patientId());
+        appointment.setPatientId(patientDto.id());
+        log.info("Patient with Id {} assigned successfully to visit with Id {}", command.patientId(), command.appointmentId());
+        return mapper.toDto(appointment);
+    }
+
+    @Transactional
+    public void delete(@NonNull Long appointmentId) {
+        log.info("Deleting appointment with id {}", appointmentId);
+        Appointment appointment = findOrThrow(appointmentId);
+        repository.delete(appointment);
+        log.info("Appointment {} deleted successfully", appointmentId);
     }
 
     private void validateDate(@NonNull LocalDateTime dateAndTime) {
