@@ -12,8 +12,8 @@ public record AppointmentDto(
         @Schema(description = "End time and Date of the appointment, always a full quarter of an hour", example = "2026-08-10T10:15:00")
         LocalDateTime endDateTime,
         @Schema(description = "Full name of the doctor conducting the appointment", example = "John Doe")
-        String doctorId,
+        String doctorName,
         @Schema(description = "Full name of the assigned patient, null when the appointment is still free", example = "Jane Roe")
-        String patientId
+        String patientName
 ) {
 }
