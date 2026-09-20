@@ -5,9 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 public record CreateAppointmentCommand(
-        @Schema(description = "Patient id, leave empty to create a free appointment, the patient can book later",
-                example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-        Long patientId,
         @Schema(description = "Doctor id", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
         Long doctorId,
         @Schema(description = "Start of the appointment, must be in the future and start at a full quarter of an hour",
