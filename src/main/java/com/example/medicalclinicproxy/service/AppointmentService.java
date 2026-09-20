@@ -3,6 +3,7 @@ package com.example.medicalclinicproxy.service;
 import com.example.medicalclinicproxy.client.MedicalClinicClient;
 import com.example.medicalclinicproxy.dto.*;
 import com.example.medicalclinicproxy.exceptions.*;
+import com.example.medicalclinicproxy.facade.MedicalClinicFacade;
 import com.example.medicalclinicproxy.mapper.AppointmentMapper;
 import com.example.medicalclinicproxy.model.Appointment;
 import com.example.medicalclinicproxy.repository.AppointmentRepository;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,9 +23,10 @@ import java.util.Set;
 @Service
 @AllArgsConstructor
 public class AppointmentService {
-    MedicalClinicClient clinicClient;
-    AppointmentMapper mapper;
-    AppointmentRepository repository;
+    private  final MedicalClinicFacade facade;
+    private final AppointmentMapper mapper;
+    private final AppointmentRepository repository;
+    private final  TransactionTemplate transactionTemplate;
     @Transactional(readOnly = true)
     public PageDto<AppointmentDto> findAll(Pageable pageable){
         return PageDto.from(repository.findAll(pageable).map(mapper::toDto));
@@ -43,19 +46,18 @@ public class AppointmentService {
         return mapper.toDto(findOrThrow(id));
     }
 
-    @Transactional
     public AppointmentDto create(@NonNull CreateAppointmentCommand command) {
         log.info("Creating appointment with doctor Id {} with date {} to {}",
                 command.doctorId(), command.startDateTime(), command.endDateTime());
+        validateDate(command.startDateTime());
+        validateTimeOfTheVisit(command.startDateTime(),command.endDateTime());
+        validateSlotIsFree(command.startDateTime(),command.endDateTime(),command.doctorId());
+        DoctorDto doctor = facade.getDoctor(command.doctorId());
         Appointment appointment = mapper.toEntity(command);
-        //Added this line in order to validate if doctor exists in database medical-clinic
-        DoctorDto doctorById = clinicClient.getDoctorById(command.doctorId());
-        appointment.setDoctorId(doctorById.id());
-
-        validateDate(appointment.getStartDateTime());
-        validateTimeOfTheVisit(appointment);
+        appointment.setDoctorName(appointment.fullName(doctor.userDto()));
+        appointment.setDoctorSpecialisation(doctor.medicalSpecialty());
         Appointment saved = repository.save(appointment);
-        log.info("Appointment with Id {} Created", appointment.getId());
+        log.info("Appointment with Id {} Created", saved.getId());
         return mapper.toDto(saved);
     }
 
@@ -64,6 +66,7 @@ public class AppointmentService {
         log.info("Removing Patient from Visit with Id {}", appointmentId);
         Appointment appointment = findOrThrow(appointmentId);
         appointment.setPatientId(null);
+        appointment.setPatientName(null);
         log.info("Patient removed successfully from visit with Id {} ", appointmentId);
     }
 
@@ -76,8 +79,9 @@ public class AppointmentService {
             log.warn("Couldn't assign patient because appointment already exists");
             throw new AppointmentAlreadyTakenException();
         }
-        PatientDto patientDto = clinicClient.getPatientById(command.patientId());
+        PatientDto patientDto = facade.getPatient(command.patientId());
         appointment.setPatientId(patientDto.id());
+        appointment.setPatientName(appointment.fullName(patientDto.userDto()));
         log.info("Patient with Id {} assigned successfully to visit with Id {}", command.patientId(), command.appointmentId());
         return mapper.toDto(appointment);
     }
@@ -93,22 +97,27 @@ public class AppointmentService {
     private void validateDate(@NonNull LocalDateTime dateAndTime) {
         log.debug("Checking if time is correct {}", dateAndTime);
         if (dateAndTime.isBefore(LocalDateTime.now())) {
-            log.warn("Invalid date, must be ahead of {}", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+            log.error("Invalid date, must be ahead of {}", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
             throw new InvalidDateOfAppointmentException();
         }
     }
 
-    private void validateTimeOfTheVisit(@NonNull Appointment appointmentToCreate) {
-        log.debug("Checking overlaps for doctor {} between {} and {}",
-                appointmentToCreate.getDoctorId(), appointmentToCreate.getStartDateTime(), appointmentToCreate.getEndDateTime());
-        int minutes = appointmentToCreate.getStartDateTime().getMinute();
-        if (!validateMinutes(minutes)) {
+    private void validateTimeOfTheVisit(@NonNull LocalDateTime startTime, LocalDateTime endTime) {
+        log.debug("Validating time of visit {} -> {}",
+                 startTime,endTime);
+        int minutesStart = startTime.getMinute();
+        int minutesEnd = endTime.getMinute();
+        if (!validateMinutes(minutesStart) || !validateMinutes(minutesEnd)) {
             throw new InvalidTimeOfTheAppointmentException();
         }
+    }
+    private void validateSlotIsFree(@NonNull LocalDateTime startTime, LocalDateTime endTime, Long doctorId){
+        log.debug("Checking overlaps for doctor {} between {} and {}",
+                doctorId, startTime, endTime);
         Set<Appointment> appointments = repository.findByDoctorIdAndStartDateTimeLessThanAndEndDateTimeGreaterThan(
-                appointmentToCreate.getDoctorId(),
-                appointmentToCreate.getEndDateTime(),
-                appointmentToCreate.getStartDateTime()
+                doctorId,
+                endTime,
+                startTime
         );
         log.debug("Found {} overlapping appointments", appointments.size());
         if (!appointments.isEmpty()) {
@@ -119,7 +128,7 @@ public class AppointmentService {
     private Appointment findOrThrow(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("Appointment with id {} does not exists", id);
+                    log.error("Appointment with id {} does not exists", id);
                     return new AppointmentDoesNotExistsException();
                 });
     }
