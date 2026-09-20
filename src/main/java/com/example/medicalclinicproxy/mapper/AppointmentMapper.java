@@ -9,6 +9,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface AppointmentMapper {
     @Mapping(target = "id",ignore = true)
+    @Mapping(target = "doctorName",ignore = true)
+    @Mapping(target = "patientName",ignore = true)
+    @Mapping(target = "patientId",ignore = true)
     Appointment toEntity(CreateAppointmentCommand command);
 
     AppointmentDto toDto(Appointment appointment);
