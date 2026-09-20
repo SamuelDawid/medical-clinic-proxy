@@ -1,6 +1,5 @@
 package com.example.medicalclinicproxy.service;
 
-import com.example.medicalclinicproxy.client.MedicalClinicClient;
 import com.example.medicalclinicproxy.dto.*;
 import com.example.medicalclinicproxy.exceptions.*;
 import com.example.medicalclinicproxy.facade.MedicalClinicFacade;
@@ -23,14 +22,15 @@ import java.util.Set;
 @Service
 @AllArgsConstructor
 public class AppointmentService {
-    private  final MedicalClinicFacade facade;
+    private final MedicalClinicFacade facade;
     private final AppointmentMapper mapper;
     private final AppointmentRepository repository;
-    private final  TransactionTemplate transactionTemplate;
+
     @Transactional(readOnly = true)
-    public PageDto<AppointmentDto> findAll(Pageable pageable){
+    public PageDto<AppointmentDto> findAll(Pageable pageable) {
         return PageDto.from(repository.findAll(pageable).map(mapper::toDto));
     }
+
     @Transactional(readOnly = true)
     public PageDto<AppointmentDto> findAllByPatientId(@NonNull Long id, Pageable pageable) {
         return PageDto.from(repository.findAllByPatientId(id, pageable).map(mapper::toDto));
@@ -46,12 +46,18 @@ public class AppointmentService {
         return mapper.toDto(findOrThrow(id));
     }
 
+    @Transactional(readOnly = true)
+    public PageDto<AvailableAppointmentSummary> findAvailableAppointmentsForSpecialization(FindFreeAppointmentsBySpecializationAndDateCommand command, Pageable pageable) {
+        return PageDto.from(repository.findAvailableSlotsBySpecialization(command.specialization(),command.startDate(),command.endDate(), pageable)
+                .map(mapper::toAvailableAppointment));
+    }
+
     public AppointmentDto create(@NonNull CreateAppointmentCommand command) {
         log.info("Creating appointment with doctor Id {} with date {} to {}",
                 command.doctorId(), command.startDateTime(), command.endDateTime());
         validateDate(command.startDateTime());
-        validateTimeOfTheVisit(command.startDateTime(),command.endDateTime());
-        validateSlotIsFree(command.startDateTime(),command.endDateTime(),command.doctorId());
+        validateTimeOfTheVisit(command.startDateTime(), command.endDateTime());
+        validateSlotIsFree(command.startDateTime(), command.endDateTime(), command.doctorId());
         DoctorDto doctor = facade.getDoctor(command.doctorId());
         Appointment appointment = mapper.toEntity(command);
         appointment.setDoctorName(appointment.fullName(doctor.userDto()));
@@ -104,14 +110,15 @@ public class AppointmentService {
 
     private void validateTimeOfTheVisit(@NonNull LocalDateTime startTime, LocalDateTime endTime) {
         log.debug("Validating time of visit {} -> {}",
-                 startTime,endTime);
+                startTime, endTime);
         int minutesStart = startTime.getMinute();
         int minutesEnd = endTime.getMinute();
         if (!validateMinutes(minutesStart) || !validateMinutes(minutesEnd)) {
             throw new InvalidTimeOfTheAppointmentException();
         }
     }
-    private void validateSlotIsFree(@NonNull LocalDateTime startTime, LocalDateTime endTime, Long doctorId){
+
+    private void validateSlotIsFree(@NonNull LocalDateTime startTime, LocalDateTime endTime, Long doctorId) {
         log.debug("Checking overlaps for doctor {} between {} and {}",
                 doctorId, startTime, endTime);
         Set<Appointment> appointments = repository.findByDoctorIdAndStartDateTimeLessThanAndEndDateTimeGreaterThan(

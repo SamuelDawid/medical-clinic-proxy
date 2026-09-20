@@ -1,9 +1,6 @@
 package com.example.medicalclinicproxy.Controller;
 
-import com.example.medicalclinicproxy.dto.AppointmentDto;
-import com.example.medicalclinicproxy.dto.AssignPatientToAppointmentCommand;
-import com.example.medicalclinicproxy.dto.CreateAppointmentCommand;
-import com.example.medicalclinicproxy.dto.PageDto;
+import com.example.medicalclinicproxy.dto.*;
 import com.example.medicalclinicproxy.service.AppointmentService;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,7 +25,12 @@ public class AppointmentController {
     public PageDto<AppointmentDto> findAll(@ParameterObject @PageableDefault(size = 20, sort = "id") Pageable pageable) {
         return service.findAll(pageable);
     }
-
+    @Operation(summary = "Get all appointments")
+    @ApiResponse(description = "Get all appointments", responseCode = "200")
+    @GetMapping("/available")
+    public PageDto<AvailableAppointmentSummary> findAvailableAppointmentsBySpecialization(@RequestBody FindFreeAppointmentsBySpecializationAndDateCommand command,@ParameterObject @PageableDefault(size = 20, sort = "id") Pageable pageable){
+        return service.findAvailableAppointmentsForSpecialization(command, pageable);
+    }
     @Operation(summary = "Get appointments by Patient id")
     @ApiResponse(description = "appointments found", responseCode = "200")
     @GetMapping("/patient/{id}")

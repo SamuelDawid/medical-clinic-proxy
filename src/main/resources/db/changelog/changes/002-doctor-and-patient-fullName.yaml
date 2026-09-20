@@ -12,3 +12,6 @@ databaseChangeLog:
               - column:
                   name: patient_name
                   type: varchar(255)
+              - column:
+                  name: doctor_specialisation
+                  type: varchar(255)
