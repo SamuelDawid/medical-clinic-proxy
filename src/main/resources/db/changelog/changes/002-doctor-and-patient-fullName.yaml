@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-doctor-and-patient-fullName
+      author: Samuel Dawid
+      changes:
+        - addColumn:
+            tableName: APPOINTMENT
+            columns:
+              - column:
+                  name: doctor_name
+                  type: varchar(255)
+              - column:
+                  name: patient_name
+                  type: varchar(255)
