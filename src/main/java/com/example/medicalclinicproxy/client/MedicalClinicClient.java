@@ -1,11 +1,15 @@
 package com.example.medicalclinicproxy.client;
 
 import com.example.medicalclinicproxy.dto.DoctorDto;
+import com.example.medicalclinicproxy.dto.DoctorSummaryDto;
+import com.example.medicalclinicproxy.dto.PageDto;
 import com.example.medicalclinicproxy.dto.PatientDto;
 import com.example.medicalclinicproxy.medicalClinicFeignClientConfig.FeignMedicalClinicConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import org.springframework.data.domain.Pageable;
 
 @FeignClient(value = "medical-clinic", url = "${medical-clinic.api.url}", configuration = FeignMedicalClinicConfiguration.class)
 public interface MedicalClinicClient {
@@ -15,4 +19,7 @@ public interface MedicalClinicClient {
 
     @GetMapping("/doctors/{id}")
     DoctorDto getDoctorById(@PathVariable Long id);
+
+    @GetMapping("/doctors/{speciality}")
+    PageDto<DoctorSummaryDto> getDoctorsBySpeciality(@PathVariable("speciality") String speciality, Pageable pageable);
 }
