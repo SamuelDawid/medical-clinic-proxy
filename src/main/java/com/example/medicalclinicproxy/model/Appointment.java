@@ -1,9 +1,7 @@
 package com.example.medicalclinicproxy.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.medicalclinicproxy.dto.UserDto;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -20,9 +18,17 @@ public class Appointment {
     private Long id;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
+    @Column(nullable = true)
     private Long patientId;
+    @Column(nullable = false)
     private Long doctorId;
+    private String doctorName;
+    private String patientName;
+    private String doctorSpecialisation;
 
+    public String fullName(UserDto userDto){
+        return userDto.firstName() + " " + userDto.lastName();
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) {
