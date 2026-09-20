@@ -6,17 +6,24 @@ import com.example.medicalclinicproxy.facade.MedicalClinicFacade;
 import com.example.medicalclinicproxy.mapper.AppointmentMapper;
 import com.example.medicalclinicproxy.model.Appointment;
 import com.example.medicalclinicproxy.repository.AppointmentRepository;
+import com.example.medicalclinicproxy.searchCriteria.AppointmentSearchCriteria;
+import com.example.medicalclinicproxy.searchCriteria.AvailableAppointmentCriteria;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import static com.example.medicalclinicproxy.searchCriteria.AppointmentSpecifications.*;
 
 @Slf4j
 @Service
@@ -26,30 +33,31 @@ public class AppointmentService {
     private final AppointmentMapper mapper;
     private final AppointmentRepository repository;
 
-    @Transactional(readOnly = true)
-    public PageDto<AppointmentDto> findAll(Pageable pageable) {
-        return PageDto.from(repository.findAll(pageable).map(mapper::toDto));
+    public PageDto<AppointmentDto> search(AppointmentSearchCriteria criteria, Pageable pageable) {
+        List<Specification<Appointment>> specifications = Stream.of(
+                hasPatient(criteria.patientId()),
+                hasDoctor(criteria.doctorId()),
+                hasSpecialization(criteria.specialization()),
+                startsBetween(criteria.from(), criteria.to()),
+                inTimeframe(criteria.timeframe())
+        ).filter(Objects::nonNull).toList();
+        Specification<Appointment> specification = Specification.allOf(specifications);
+        return PageDto.from(repository.findAll(specification, pageable).map(mapper::toDto));
     }
 
-    @Transactional(readOnly = true)
-    public PageDto<AppointmentDto> findAllByPatientId(@NonNull Long id, Pageable pageable) {
-        return PageDto.from(repository.findAllByPatientId(id, pageable).map(mapper::toDto));
-    }
-
-    @Transactional(readOnly = true)
-    public PageDto<AppointmentDto> findAllByDoctorId(@NonNull Long id, Pageable pageable) {
-        return PageDto.from(repository.findAllByDoctorId(id, pageable).map(mapper::toDto));
+    public PageDto<AvailableAppointmentSummary> searchAvailable(AvailableAppointmentCriteria criteria, Pageable pageable) {
+        List<Specification<Appointment>> specification = Stream.of(
+                isFree(),
+                hasDoctor(criteria.doctorId()),
+                hasSpecialization(criteria.specialization()),
+                startsBetween(criteria.from(), criteria.to())
+        ).filter(Objects::nonNull).toList();
+        return PageDto.from(repository.findAll(Specification.allOf(specification), pageable).map(mapper::toAvailableAppointment));
     }
 
     @Transactional(readOnly = true)
     public AppointmentDto findById(@NonNull Long id) {
         return mapper.toDto(findOrThrow(id));
-    }
-
-    @Transactional(readOnly = true)
-    public PageDto<AvailableAppointmentSummary> findAvailableAppointmentsForSpecialization(FindFreeAppointmentsBySpecializationAndDateCommand command, Pageable pageable) {
-        return PageDto.from(repository.findAvailableSlotsBySpecialization(command.specialization(),command.startDate(),command.endDate(), pageable)
-                .map(mapper::toAvailableAppointment));
     }
 
     public AppointmentDto create(@NonNull CreateAppointmentCommand command) {
