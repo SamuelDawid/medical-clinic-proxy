@@ -16,16 +16,11 @@ public record AppointmentSearchCriteria(
         LocalDateTime to,
         Timeframe timeframe
 ) {
-    @AssertTrue(message = "from mus be before to")
+    @AssertTrue(message = "from must be before to")
     public boolean isRangeValid() {
         if (from == null || to == null) {
             return true;
         }
         return from.isBefore(to);
-    }
-
-    @AssertTrue(message = "from and to must be provided together")
-    public boolean isRangeComplete() {
-        return from != null && to != null;
     }
 }

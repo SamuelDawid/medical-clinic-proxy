@@ -18,7 +18,6 @@ public class Appointment {
     private Long id;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
-    @Column(nullable = true)
     private Long patientId;
     @Column(nullable = false)
     private Long doctorId;
@@ -26,9 +25,10 @@ public class Appointment {
     private String patientName;
     private String doctorSpecialisation;
 
-    public String fullName(UserDto userDto){
+    public String fullName(UserDto userDto) {
         return userDto.firstName() + " " + userDto.lastName();
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
