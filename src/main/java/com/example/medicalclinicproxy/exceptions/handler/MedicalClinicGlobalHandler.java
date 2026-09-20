@@ -22,7 +22,7 @@ public class MedicalClinicGlobalHandler {
                 .body(new ErrorMessageDto(
                         resourceNotFoundexception.getMessage(),
                         404L,
-                        LocalDateTime.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+                        LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                 ));
     }
 
@@ -33,7 +33,7 @@ public class MedicalClinicGlobalHandler {
                 .body(new ErrorMessageDto(
                         exception.getMessage(),
                         502L,
-                        LocalDateTime.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+                        LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                 ));
     }
 
@@ -44,7 +44,7 @@ public class MedicalClinicGlobalHandler {
                 .body(new ErrorMessageDto(
                         "Bad Request",
                         400L,
-                        LocalDateTime.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+                        LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                 ));
     }
 
@@ -55,7 +55,7 @@ public class MedicalClinicGlobalHandler {
                 .body(new ErrorMessageDto(
                         "Service Unavailable",
                         503L,
-                        LocalDateTime.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+                        LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                 ));
     }
 
@@ -66,7 +66,17 @@ public class MedicalClinicGlobalHandler {
                 .body(new ErrorMessageDto(
                         "Waiting time exceeded",
                         504L,
-                        LocalDateTime.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+                        LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+                ));
+    }
+    @ExceptionHandler(MedicalClinicProxyException.class)
+    public ResponseEntity<ErrorMessageDto> handleMedicalClinicProxyError(MedicalClinicProxyException exception){
+        log.error("Rejected {} -> {}",exception.getMessage(),exception.getStatus());
+        return ResponseEntity.status(exception.getStatus())
+                .body(new ErrorMessageDto(
+                        exception.getMessage(),
+                        (long) exception.getStatus().value(),
+                        LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                 ));
     }
 }
