@@ -11,7 +11,6 @@ import com.example.medicalclinicproxy.exceptions.MedicalClinicUnavailableExcepti
 import com.example.medicalclinicproxy.exceptions.PatientNotFoundException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import jakarta.validation.constraints.NotBlank;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,12 +34,12 @@ public class MedicalClinicFacade {
         return clinicClient.getPatientById(id);
     }
 
-    @CircuitBreaker(name = "clinic", fallbackMethod = "getDoctorsFromSpecificSpecialityFallback")
-    public PageDto<DoctorSummaryDto> getDoctorsFromSpecificSpeciality(@NotBlank String speciality, Pageable pageable) {
+    @CircuitBreaker(name = "medical-clinic", fallbackMethod = "getDoctorsFromSpecificSpecialityFallback")
+    public PageDto<DoctorSummaryDto> getDoctorsFromSpecificSpeciality(String speciality, Pageable pageable) {
         return clinicClient.getDoctorsBySpeciality(speciality, pageable);
     }
 
-    private PageDto<DoctorSummaryDto> getDoctorsFromSpecificSpecialityFallback(@NotBlank String speciality, Pageable pageable, Throwable throwable) {
+    private PageDto<DoctorSummaryDto> getDoctorsFromSpecificSpecialityFallback(String speciality, Pageable pageable, Throwable throwable) {
         if (throwable instanceof MedicalClinicProxyException exception) {
             throw exception;
         }
