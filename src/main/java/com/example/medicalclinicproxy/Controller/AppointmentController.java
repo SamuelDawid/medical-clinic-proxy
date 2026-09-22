@@ -7,7 +7,6 @@ import com.example.medicalclinicproxy.service.AppointmentService;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +25,7 @@ public class AppointmentController {
     @ApiResponse(responseCode = "200", description = "Appointments found")
     @ApiResponse(responseCode = "400", description = "Invalid filter values")
     @GetMapping
-    public PageDto<AppointmentDto> search(@ParameterObject @Valid AppointmentSearchCriteria criteria,
+    public PageDto<AppointmentDto> search(@ParameterObject AppointmentSearchCriteria criteria,
             @ParameterObject @PageableDefault(size = 20, sort = "id") Pageable pageable) {
         return service.search(criteria, pageable);
     }
@@ -35,7 +34,7 @@ public class AppointmentController {
     @ApiResponse(responseCode = "200", description = "Available slots found")
     @GetMapping("/available")
     public PageDto<AvailableAppointmentSummary> searchAvailable(
-            @ParameterObject @Valid AvailableAppointmentCriteria criteria,
+            @ParameterObject AvailableAppointmentCriteria criteria,
             @ParameterObject @PageableDefault(size = 20, sort = "id") Pageable pageable){
         return service.searchAvailable(criteria,pageable);
     }
@@ -54,6 +53,7 @@ public class AppointmentController {
     @ApiResponse(responseCode = "404", description = "Doctor not found")
     @ApiResponse(responseCode = "409", description = "Appointment overlaps with another appointment of this doctor")
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public AppointmentDto create(@RequestBody CreateAppointmentCommand command) {
         return service.create(command);
     }
