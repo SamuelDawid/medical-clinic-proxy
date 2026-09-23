@@ -53,12 +53,21 @@ public final class TestDataFactory {
 
     public static List<Appointment> threeAppointments() {
         List<Appointment> appointments = new ArrayList<>();
-        appointments.add(appointment(1L, FIRST_START, FIRST_END, PATIENT_ID, PATIENT_NAME, DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY));
-        appointments.add(appointment(2L, SECOND_START, SECOND_END, 2L, "Maria Wisniewska", DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY));
-        appointments.add(appointment(3L, THIRD_START, THIRD_END, null, null, 2L, "Jan Nowicki", DERMATOLOGY));
+        appointments.add(appointment( FIRST_START, FIRST_END, PATIENT_ID, PATIENT_NAME, DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY));
+        appointments.add(appointment( SECOND_START, SECOND_END, 2L, "Maria Wisniewska", DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY));
+        appointments.add(appointment( THIRD_START, THIRD_END, null, null, 2L, "Jan Nowicki", DERMATOLOGY));
         return appointments;
     }
-
+    public static List<Appointment> threeAppointmentsInThePast(){
+        LocalDateTime startFirstInThePast = LocalDateTime.of(2022,12,5,9,15);
+        LocalDateTime endFirstInThePast = LocalDateTime.of(2022,12,5,10,15);
+        LocalDateTime startSecondInThePast = LocalDateTime.of(2022,12,5,9,15);
+        LocalDateTime endSecondInThePast = LocalDateTime.of(2022,12,5,10,15);
+        List<Appointment> appointments = new ArrayList<>();
+        appointments.add(appointment( startFirstInThePast, endFirstInThePast, PATIENT_ID, PATIENT_NAME, DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY));
+        appointments.add(appointment( startSecondInThePast, endSecondInThePast, 2L, "Maria Wisniewska", DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY));
+        return appointments;
+    }
     public static List<AppointmentDto> threeAppointmentDtos() {
         return List.of(
                 new AppointmentDto(1L, FIRST_START, FIRST_END, DOCTOR_NAME, PATIENT_NAME),
@@ -85,14 +94,14 @@ public final class TestDataFactory {
 
 
     public static Appointment bookedAppointment() {
-        return appointment(1L, FIRST_START, FIRST_END, PATIENT_ID, PATIENT_NAME, DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY);
+        return appointment( FIRST_START, FIRST_END, PATIENT_ID, PATIENT_NAME, DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY);
     }
 
     public static Appointment freeAppointment() {
-        return appointment(1L, FIRST_START, FIRST_END, null, null, DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY);
+        return appointment( FIRST_START, FIRST_END, null, null, DOCTOR_ID, DOCTOR_NAME, CARDIOLOGY);
     }
 
-    public static Appointment appointment(Long id,
+    public static Appointment appointment(
             LocalDateTime startDateTime,
             LocalDateTime endDateTime,
             Long patientId,
@@ -101,7 +110,7 @@ public final class TestDataFactory {
             String doctorName,
             String doctorSpecialisation) {
         return new Appointment(
-                id,
+                null,
                 startDateTime,
                 endDateTime,
                 patientId,
