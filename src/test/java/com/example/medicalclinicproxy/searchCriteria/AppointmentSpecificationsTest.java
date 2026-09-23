@@ -110,7 +110,7 @@ class AppointmentSpecificationsTest {
     @Test
     void inTimeframe_WhenPastGiven_ShouldMatchOnlyAlreadyFinishedAppointments() {
         //Given
-        repository.saveAll(TestDataFactory.threeAppointmentsInThePast());
+        repository.saveAll(TestDataFactory.twoAppointmentsInThePast());
         //When
         List<Appointment> result = repository.findAll(inTimeframe(Timeframe.PAST));
         //Then

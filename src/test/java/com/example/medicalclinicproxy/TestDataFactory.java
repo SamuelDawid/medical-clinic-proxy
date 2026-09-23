@@ -58,7 +58,7 @@ public final class TestDataFactory {
         appointments.add(appointment( THIRD_START, THIRD_END, null, null, 2L, "Jan Nowicki", DERMATOLOGY));
         return appointments;
     }
-    public static List<Appointment> threeAppointmentsInThePast(){
+    public static List<Appointment> twoAppointmentsInThePast(){
         LocalDateTime startFirstInThePast = LocalDateTime.of(2022,12,5,9,15);
         LocalDateTime endFirstInThePast = LocalDateTime.of(2022,12,5,10,15);
         LocalDateTime startSecondInThePast = LocalDateTime.of(2022,12,5,9,15);
