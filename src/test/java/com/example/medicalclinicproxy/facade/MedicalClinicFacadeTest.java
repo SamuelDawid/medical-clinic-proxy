@@ -1,6 +1,5 @@
 package com.example.medicalclinicproxy.facade;
 
-import com.example.medicalclinicproxy.TestDataFactory;
 import com.example.medicalclinicproxy.client.MedicalClinicClient;
 import com.example.medicalclinicproxy.dto.DoctorDto;
 import com.example.medicalclinicproxy.dto.DoctorSummaryDto;

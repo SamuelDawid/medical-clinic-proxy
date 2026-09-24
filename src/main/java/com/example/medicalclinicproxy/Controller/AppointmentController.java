@@ -1,10 +1,8 @@
 package com.example.medicalclinicproxy.Controller;
 
 import com.example.medicalclinicproxy.dto.*;
-import com.example.medicalclinicproxy.searchCriteria.AppointmentSearchCriteria;
-import com.example.medicalclinicproxy.searchCriteria.AvailableAppointmentCriteria;
 import com.example.medicalclinicproxy.service.AppointmentService;
-import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -35,8 +33,8 @@ public class AppointmentController {
     @GetMapping("/available")
     public PageDto<AvailableAppointmentSummary> searchAvailable(
             @ParameterObject AvailableAppointmentCriteria criteria,
-            @ParameterObject @PageableDefault(size = 20, sort = "id") Pageable pageable){
-        return service.searchAvailable(criteria,pageable);
+            @ParameterObject @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        return service.searchAvailable(criteria, pageable);
     }
 
     @Operation(summary = "Get appointment by id")

@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Doctors", description = "Doctor data from medical-clinic service")
@@ -26,8 +27,8 @@ public class DoctorController {
     @ApiResponse(responseCode = "200", description = "Doctors found (empty page if none)")
     @ApiResponse(responseCode = "503", description = "medical-clinic service unavailable")
     @GetMapping
-    public PageDto<DoctorSummaryDto> search(@ParameterObject DoctorSearchCriteria criteria,
+    public PageDto<DoctorSummaryDto> bySpecialty(@RequestParam String speciality,
             @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
-        return service.search(criteria, pageable);
+        return service.search(speciality, pageable);
     }
 }
