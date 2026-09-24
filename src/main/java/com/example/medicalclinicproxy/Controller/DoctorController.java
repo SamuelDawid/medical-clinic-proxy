@@ -2,7 +2,6 @@ package com.example.medicalclinicproxy.Controller;
 
 import com.example.medicalclinicproxy.dto.DoctorSummaryDto;
 import com.example.medicalclinicproxy.dto.PageDto;
-import com.example.medicalclinicproxy.searchCriteria.DoctorSearchCriteria;
 import com.example.medicalclinicproxy.service.DoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
