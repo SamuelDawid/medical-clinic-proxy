@@ -19,7 +19,7 @@ public interface MedicalClinicClient {
     DoctorDto getDoctorById(@PathVariable Long id);
 
     @GetMapping("/doctors")
-    PageDto<DoctorSummaryDto> getDoctorsBySpeciality(@RequestParam("specialty") String specialty,
+    PageDto<DoctorSummaryDto> getDoctorsBySpeciality(@RequestParam("speciality") String specialty,
             @RequestParam("page") int page,
             @RequestParam("size") int size);
 
