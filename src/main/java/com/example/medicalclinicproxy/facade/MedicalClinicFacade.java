@@ -20,16 +20,6 @@ import org.springframework.stereotype.Service;
 public class MedicalClinicFacade {
     private final MedicalClinicClient clinicClient;
 
-    @CircuitBreaker(name = "medical-clinic", fallbackMethod = "getDoctorFallback")
-    public DoctorDto getDoctor(@NonNull Long id) {
-        return clinicClient.getDoctorById(id);
-    }
-
-    @CircuitBreaker(name = "medical-clinic", fallbackMethod = "getPatientFallback")
-    public PatientDto getPatient(@NonNull Long id) {
-        return clinicClient.getPatientById(id);
-    }
-
     @CircuitBreaker(name = "medical-clinic", fallbackMethod = "getDoctorsFromSpecificSpecialityFallback")
     public PageDto<DoctorSummaryDto> getDoctorsFromSpecificSpeciality(String speciality, Pageable pageable) {
         return clinicClient.getDoctorsBySpeciality(speciality, pageable.getPageNumber(), pageable.getPageSize());
@@ -68,14 +58,6 @@ public class MedicalClinicFacade {
     @CircuitBreaker(name = "medical-clinic", fallbackMethod = "assignPatientFallback")
     public AppointmentDto assignPatient(@NonNull AssignPatientToAppointmentCommand command) {
         return clinicClient.assignPatient(command);
-    }
-
-    private DoctorDto getDoctorFallback(Long id, Throwable throwable) {
-        throw toProxyException("getDoctor id=" + id, throwable);
-    }
-
-    private PatientDto getPatientFallback(Long id, Throwable throwable) {
-        throw toProxyException("getPatient id=" + id, throwable);
     }
 
     private PageDto<DoctorSummaryDto> getDoctorsFromSpecificSpecialityFallback(String speciality, Pageable pageable, Throwable throwable) {
